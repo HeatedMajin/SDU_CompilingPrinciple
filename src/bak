@@ -1,0 +1,174 @@
+package xyz.majn.comp;
+
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+public class MyCompiler {
+	public static String filePath = "src/programmer.txt";
+	private static DataInputStream datain = null;
+	private static FileInputStream in = null;
+	static {
+		try {
+			//初始化文件流
+			in = new FileInputStream(filePath);
+			datain = new DataInputStream(in);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			try {
+				if (datain != null)
+					datain.close();
+				if (in != null)
+					in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	/**
+	 * 读取文件中的一个字符
+	 * 
+	 * @return
+	 * @throws EOFException
+	 */
+	public static char getChar() throws EOFException {
+		try {
+			return (char) datain.readByte();
+		} catch (EOFException e) {
+			throw new EOFException();
+		}catch (Exception e1) {
+			try {
+				if (datain != null)
+					datain.close();
+				if (in != null)
+					in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			throw new RuntimeException(e1);
+		}
+	}
+
+	public static List<WordBean> wordsList = new LinkedList<WordBean>();
+	private static String word;
+
+	public static LinkedList<String> SYM = new LinkedList<>();
+	public static HashMap<String, String> SYM_ID = new HashMap<>();
+	public static HashMap<String,String> SYM_NUM = new HashMap<>();
+			
+	
+	public static void getSym() {
+		try {
+			char c = ' ';
+			while (true) {
+				word = "";
+				while (c == ' ' || c == '\r' || c == '\n') {
+					c = getChar();
+				}
+				if (isLetter(c)) {// 以字母开头
+					word += c;
+					c = getChar();
+					while (isLetter(c) || isDigit(c)) {// 后跟任意多个字母和数字
+						word += c;
+						c = getChar();
+					}
+					// 获取 关键字 的机内码
+					int sysCode = SYMTable.getSysCode(word);
+//					if (sysCode != -1) {// 系统关键字
+//						WordBean wordBean = new WordBean(word.toUpperCase() + "SYM", sysCode + "", null);
+//						wordsList.add(wordBean);
+//					} else {// 用户标识符
+//						WordBean wordBean = new WordBean("IDENT", word, null);
+//						wordsList.add(wordBean);
+//					}
+					SYM.add(sysCode+"");
+				} else if (isDigit(c)) {// 以数字开头
+					word += c;
+					c = getChar();
+					while (isDigit(c)) {// 后跟任意多数字
+						word += c;
+						c = getChar();
+					}
+					// 数字
+//					WordBean wordBean = new WordBean("NUMBER", "0", word);
+//					wordsList.add(wordBean);
+					int sysCode = SYMTable.getSysCode(word);
+					SYM.add(sysCode+"");
+				} else if (isLianYunsuan(c)) {// 连运算 运算符
+					word += c;
+					c = getChar();
+					if (c=='=') {
+						word += c;
+						//
+//						WordBean wordBean = new WordBean(word, "-2", null);
+//						wordsList.add(wordBean);
+						c = ' ';
+					}
+					int sysCode = SYMTable.getSysCode(word);
+					SYM.add(sysCode+"");
+				} else if (isYunsuan(c)) {// 运算符
+//					WordBean wordBean = new WordBean(c+"", "-2", null);
+//					wordsList.add(wordBean);
+					c = ' ';
+					int sysCode = SYMTable.getSysCode(word);
+					SYM.add(sysCode+"");
+				}
+
+			}
+		} catch (EOFException e) {
+		}
+
+	}
+
+	private static boolean isYunsuan(char c) {
+		if (isLianYunsuan(c) || c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == ';'||c==','||c==':') {
+			return true;
+		}
+		return false;
+	}
+
+	private static boolean isLianYunsuan(char c) {
+		if (c == '>' || c == '<' || c == '：') {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 判断字符是不是数字
+	 * 
+	 * @param c
+	 * @return
+	 */
+	private static boolean isDigit(char c) {
+		// System.out.println((int) c);
+		if (c <= 57 && c >= 48) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * 判断字符是不是英文字母
+	 * 
+	 * @param c
+	 * @return
+	 */
+	private static boolean isLetter(char c) {
+
+		if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+}
