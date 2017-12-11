@@ -51,7 +51,9 @@ public class SYMTable {
 			flag  = 101;
 		}else if(word.equals(":=")){
 			flag  = 102;
-		} else {
+		} else if(word.equals("call")){
+			flag = 103;
+		}else {
 			Matcher matcher = p.matcher(word);
 			if (matcher.find()) {
 				flag = -2;

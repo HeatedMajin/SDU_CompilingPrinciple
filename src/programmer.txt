@@ -1,19 +1,6 @@
-const a1 = 10 , aa =                 1;
-
-var b,bb;
-
+const a=10;
+var b,c;
 procedure p;
-  var e;
-    procedure p1;
-  	  var f,ff;
-  	  begin
-      f:=2+1;
-  	  end;
-  	
-  begin
-  e:=1;
+begin
   c:=b+a;
-  if a>b  then a:=b+c;
-  end;
-
-a:=b;
+end;

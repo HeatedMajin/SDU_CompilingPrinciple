@@ -1,5 +1,8 @@
 package xyz.majn.comp;
 
+import xyz.majin.utils.NameKind;
+import xyz.majin.utils.OPKind;
+
 /**
  * 中间代码的一条代码： f：功能码 I：层次差 a：位移量
  * 
@@ -17,27 +20,46 @@ package xyz.majn.comp;
  *
  */
 public class CodeBean {
-	private int f;
+	private OPKind f;
 	private int i;
 	private int a;
 
-	public CodeBean(int f, int i, int a) {
+	public CodeBean(OPKind f, int i, int a) {
 		super();
 		this.f = f;
 		this.i = i;
 		this.a = a;
 	}
-
-	public CodeBean() {
-		super();
-		// TODO Auto-generated constructor stub
+	
+	public String toString() {
+		String res = "";
+		if(this.f == OPKind.CAL){
+			res += "CAL";
+		}else if(this.f == OPKind.INT){
+			res += "INT";
+		}else if(this.f == OPKind.JMP){
+			res += "JMP";
+		}else if(this.f == OPKind.JPC){
+			res += "JPC";
+		}else if(this.f == OPKind.LIT){
+			res += "LIT";
+		}else if(this.f == OPKind.LOD){
+			res += "LOD";
+		}else if(this.f == OPKind.OPR){
+			res += "OPR";
+		}else if(this.f == OPKind.STO){
+			res += "STO";
+		}
+		
+		res+="\t"+i+"\t"+a;
+		return res;
 	}
 
-	public int getF() {
+	public OPKind getF() {
 		return f;
 	}
 
-	public void setF(int f) {
+	public void setF(OPKind f) {
 		this.f = f;
 	}
 
@@ -56,5 +78,4 @@ public class CodeBean {
 	public void setA(int a) {
 		this.a = a;
 	}
-
 }

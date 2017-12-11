@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import xyz.majin.excep.NameNotExist;
 import xyz.majin.excep.SyntaxError;
-import xyz.majin.utils.Kind;
 import xyz.majin.utils.NameItem;
+import xyz.majin.utils.NameKind;
+import xyz.majin.utils.OPKind;
 import xyz.majin.utils.Utils;
 
 public class MyCompiler {
@@ -89,6 +91,11 @@ public class MyCompiler {
 	/**************************************** 递归下降的语法分析 ***************************************/
 	// 要求中TABLE
 	public static ArrayList<NameItem> nameTable = new ArrayList<>();
+	// 记录每一层的位置 ；第i个元素表示第i层在table的位置
+	public static ArrayList<Integer> levelIndex = new ArrayList<>();
+	static {
+		levelIndex.add(0);
+	}
 
 	// 语法分析
 	public static void Block(boolean printNameTable) {
@@ -104,9 +111,14 @@ public class MyCompiler {
 			System.out.println("语法分析，有错误");
 		}
 		if (printNameTable) {
-			for (NameItem item : nameTable) {
-				System.out.println(item);
+			for (int i = 0; i < nameTable.size(); i++) {
+				if (levelIndex.contains(i)) {
+					System.out.println(levelIndex.indexOf(i) + "\t" + nameTable.get(i));
+				} else {
+					System.out.println("\t" + nameTable.get(i));
+				}
 			}
+
 		}
 	}
 
@@ -125,7 +137,7 @@ public class MyCompiler {
 	 * @throws SyntaxError
 	 */
 	private static void SubProgram(int level) throws SyntaxError {
-		if(level == 0){
+		if (level == 0) {
 			CONST_SM();
 		}
 		VAR_SM(level);
@@ -148,24 +160,44 @@ public class MyCompiler {
 		// or 读
 		// or 写
 		// or 调用
-		
+
 		boolean res = false;
-		if(advance!=SYM.size() && FuZhi(level)){
-			res= true;
-		}else if(advance!=SYM.size() && FuHe(level)){
-			res =  true;
-		}else if(advance!=SYM.size() && TiaoJianJieGou(level)){
-			res =  true;
+		if (advance != SYM.size() && FuZhi(level)) {
+			res = true;
+		} else if (advance != SYM.size() && FuHe(level)) {
+			res = true;
+		} else if (advance != SYM.size() && TiaoJianJieGou(level)) {
+			res = true;
+		} else if (advance != SYM.size() && CallJieGou(level)) {
+			res = true;
 		}
-		if(advance==SYM.size()){
+		if (advance == SYM.size()) {
 			return true;
 		}
-		if(!isCurrentCode(";")){
-			res = false; 
-		}else{
+		if (!isCurrentCode(";")) {
+			res = false;
+		} else {
 			advance++;
 		}
 		return res;
+	}
+
+	/**
+	 * 检查调用结构
+	 * 
+	 * @throws SyntaxError
+	 */
+	private static boolean CallJieGou(int level) throws SyntaxError {
+		// call
+		// 过程名
+		if (isCurrentCode("call")) {
+			advance++;
+			if (SYM.get(advance) == -1) {// 标识符
+				advance++;
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -232,13 +264,13 @@ public class MyCompiler {
 	 * 
 	 * @throws SyntaxError
 	 */
-	private static boolean SubFuHe(int level) throws SyntaxError{
+	private static boolean SubFuHe(int level) throws SyntaxError {
 		// 语句
 		// 子复合
 
 		// or end
 
-		if(YUJU(level)){
+		if (YUJU(level)) {
 			SubFuHe(level);
 			return true;
 		} else if (isCurrentCode("end")) {
@@ -261,11 +293,13 @@ public class MyCompiler {
 			advance++;
 			if (isCurrentCode(":=")) {//
 				advance++;
-				if(BiaoDaShi()){
+				if (BiaoDaShi()) {
+//					System.out.println("赋值语句");
 					return true;
 				}
+				advance--;
 			}
-			// System.out.println("赋值语句");
+			advance--;
 		}
 		return false;
 	}
@@ -276,12 +310,12 @@ public class MyCompiler {
 	private static boolean BiaoDaShi() {
 		// 项
 		// 子表达式
-		
-		if(Item() && BiaoDaShi_P()){
-			return true;	
+
+		if (Item() && BiaoDaShi_P()) {
+			return true;
 		}
 		return false;
-//		throw new SyntaxError();
+		// throw new SyntaxError();
 	}
 
 	/**
@@ -310,7 +344,7 @@ public class MyCompiler {
 		// 因子
 		// 子项
 
-		if(Factor()&&SubItem()){
+		if (Factor() && SubItem()) {
 			return true;
 		}
 		return false;
@@ -328,11 +362,11 @@ public class MyCompiler {
 
 		if (isCurrentCode("*") || isCurrentCode("/")) {
 			advance++;
-			if(Factor() && SubItem()){
+			if (Factor() && SubItem()) {
 				return true;
 			}
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
@@ -344,7 +378,7 @@ public class MyCompiler {
 		// 标识符
 		// or 数字
 		// or 表达式
-		
+
 		int code = SYM.get(advance);
 		if (code == -1 || code == -2) {
 			advance++;
@@ -362,7 +396,7 @@ public class MyCompiler {
 		// 声明头
 		// 子程序
 
-		if(PROC_SM_P(level)){
+		if (PROC_SM_P(level)) {
 			SubProgram(level);
 		}
 	}
@@ -384,7 +418,11 @@ public class MyCompiler {
 					String pname = ID.get(advance - 1);
 					// System.out.println("produce :"+pname+"
 					// level:"+(level-1));
-					nameTable.add(new NameItem(pname, Kind.PROCEDURE, level - 1, ""));
+					nameTable.add(new NameItem(pname, NameKind.PROCEDURE, level - 1, ""));
+
+					int cIndex = nameTable.size();
+					// int cLevel = levelIndex.size();
+					levelIndex.add(cIndex);
 					advance++;
 					return true;
 				} else {
@@ -413,7 +451,7 @@ public class MyCompiler {
 			if (SYM.get(advance) == -1) {// 检查是标识符
 				String varname = ID.get(advance);
 				// System.out.println("var name : "+varname+" level:"+level);
-				nameTable.add(new NameItem(varname, Kind.VARIABLE, level, 3 + ""));
+				nameTable.add(new NameItem(varname, NameKind.VARIABLE, level, 3 + ""));
 				advance++;
 				VAR_SM_P(level, 4);
 				if (SYM.get(advance) == SYMTable.getSysCode(";")) {// 检查是不是;结尾
@@ -441,7 +479,7 @@ public class MyCompiler {
 			if (SYM.get(advance) == -1) {
 				String varname = ID.get(advance);
 				// System.out.println("var name : "+varname+" level:"+level);
-				nameTable.add(new NameItem(varname, Kind.VARIABLE, level, ADR + ""));
+				nameTable.add(new NameItem(varname, NameKind.VARIABLE, level, ADR + ""));
 				advance++;
 				VAR_SM_P(level, ADR + 1);
 			} else {
@@ -489,7 +527,7 @@ public class MyCompiler {
 					String constname = ID.get(advance - 2);
 					Integer value = NUM.get(advance);
 					// System.out.println(constname+" value:"+value);
-					nameTable.add(new NameItem(constname, Kind.CONSTANT, value, ""));
+					nameTable.add(new NameItem(constname, NameKind.CONSTANT, value, ""));
 					advance++;
 				} else {
 					throw new SyntaxError();
@@ -522,23 +560,126 @@ public class MyCompiler {
 	}
 
 	/********************************* 语义分析和中间代码生成 *************************************/
-	public static void GEN() {
+	private static LinkedList<CodeBean> codes = new LinkedList<>();
 
-		//SYM index
+	public static void GEN(boolean print) {
+
+		// SYM index
 		int index = 0;
-		
+
+		// code level
+		int codeLevel = 0;
+
+		boolean start = false;
+
 		for (; index < SYM.size(); index++) {
-			
-			//SYM item
+
+			// SYM item
 			int item = SYM.get(index);
-			
-			if (item == -2) {
-				// 产生LIT
-			} else if (item == -1) {
+			if (item == SYMTable.getSysCode("begin")) {
+				start = true;
+				// 并且代码的层数加一
+				codeLevel++;
+			}
+			if (!start) {
+				continue;
+			}
+			if (item == -1) {
+
+				//第一个返回层差，第二个返回层内偏移
+				//常量没有层内偏移，第二个返回-1，第三个返回常量值
+				int[] res;
+				try {
+					res = levelDiff(codeLevel, ID.get(index));
+				} catch (NameNotExist e) {
+					System.out.println(e.getMessage());
+					return;
+				}
+				if (res[1] == -1) {
+					// 产生LIT: LIT,0,常数
+					codes.add(new CodeBean(OPKind.LIT, 0, res[2]));
+				} else {
+					// 产生LOD: LOD,层差,层内偏移
+					codes.add(new CodeBean(OPKind.LOD, res[0], res[1]));
+				}
+				// } else if (item == SYMTable.getSysCode(":=")) {
+				// // 产生STO
 				//
+				// }else if(item == SYMTable.getSysCode("CAL")){
+				// //产生CAL
+
+			} else if (item == SYMTable.getSysCode("procedure")) {
+				// 产生INT
+
+				// }else if(item == SYMTable.getSysCode("")){
+				// //产生JPC
+				//
+				// }else if(item == SYMTable.getSysCode("")){
+				// //产生JMP
+				//
+				// }else if(item == SYMTable.getSysCode("")){
+				// //产生OPR
+
+			} else if (item == SYMTable.getSysCode("end")) {
+				// 代码计数器减一
+				codeLevel--;
+				start = false;
 			}
 		}
-
+		if (print) {
+			for (CodeBean i : codes) {
+				System.out.println(i);
+			}
+		}
 	}
 
+	/**
+	 * 去name表中找，层差，曾内偏移(!!!+3)
+	 * 
+	 * @param varName
+	 *            变量名
+	 * @param codelevel
+	 *            当前代码在第几层
+	 * @return 说明和调用的层差,说明层内偏移
+	 * @throws NameNotExist
+	 *             变量名不存在报出异常
+	 */
+	private static int[] levelDiff(int codelevel, String varName) throws NameNotExist {
+		int res[] = null;
+
+		// 变量在第几层,从代码所在的层 往0层找，(最近的优先)
+		for (int i = codelevel; i >= 0; i--) {
+
+			// 当前层起始位置
+			int levelStart = levelIndex.get(i);
+			// 当前层的结束位置
+			int levelEnd;
+			if (codelevel == levelIndex.size() - 1) {
+				levelEnd = nameTable.size();
+			} else {
+				levelEnd = levelIndex.get(i + 1);
+			}
+
+			for (int ii = levelStart; ii < levelEnd; ii++) {
+				if (varName.equals(nameTable.get(ii).getName())) {
+					res = new int[3];
+					res[0] = codelevel - i;
+					String adr = nameTable.get(ii).getADR();
+
+					
+					if (!adr.trim().equals("")) {
+						res[1] = Integer.parseInt(adr);//变量
+					}else{
+						res[1] = -1;//常量
+						res[2] = nameTable.get(ii).getValue();
+					}
+					return res;
+				}
+			}
+		}
+		if (res == null) {
+			throw new NameNotExist(varName + ":是未声明的变量");
+		}
+		return res;
+	}
 }

@@ -29,10 +29,18 @@ public class TestComp {
 		MyCompiler.getSym(true);
 	}
 
-	@Test
+//	@Test
 	public void testBlock(){
 		MyCompiler.getSym(false);
 		MyCompiler.Block(true);
+		System.out.println();
+	}
+	
+	@Test
+	public void testGen(){
+		MyCompiler.getSym(false);
+		MyCompiler.Block(false);
+		MyCompiler.GEN(true);
 		System.out.println();
 	}
 }

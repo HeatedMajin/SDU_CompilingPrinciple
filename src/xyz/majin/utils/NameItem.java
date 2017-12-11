@@ -5,7 +5,7 @@ package xyz.majin.utils;
 //过程名的name，kind，level
 public class NameItem {
 	private String name;
-	private Kind kind;
+	private NameKind kind;
 	private int value;// 常量值或者变量的level
 	private String ADR;
 	
@@ -17,11 +17,11 @@ public class NameItem {
 		this.name = name;
 	}
 
-	public Kind getKind() {
+	public NameKind getKind() {
 		return kind;
 	}
 
-	public void setKind(Kind kind) {
+	public void setKind(NameKind kind) {
 		this.kind = kind;
 	}
 
@@ -33,7 +33,7 @@ public class NameItem {
 		this.value = value;
 	}
 
-	public NameItem(String name, Kind kind, int value,String ADR) {
+	public NameItem(String name, NameKind kind, int value,String ADR) {
 		super();
 		this.name = name;
 		this.kind = kind;
@@ -49,14 +49,22 @@ public class NameItem {
 	public String toString() {
 		String type = "var";
 		String valueType = "层数:";
-		if(this.kind == Kind.CONSTANT){
+		if(this.kind == NameKind.CONSTANT){
 			type="const";
 			valueType = "值  :";
-		}else if(this.kind == Kind.PROCEDURE){
+		}else if(this.kind == NameKind.PROCEDURE){
 			type= "produce";
 			valueType = "层数:";
 		}
 		String res ="name:"+name+"\t\tkind:"+type+"\t\t"+valueType+value+"\t\tADR:"+ADR;
 		return res;
+	}
+
+	public String getADR() {
+		return ADR;
+	}
+
+	public void setADR(String aDR) {
+		ADR = aDR;
 	}
 }
