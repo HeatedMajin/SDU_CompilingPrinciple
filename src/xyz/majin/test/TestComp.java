@@ -37,7 +37,7 @@ public class TestComp {
 	}
 	
 	@Test
-	public void testGen(){
+	public void testGen(){  
 		MyCompiler.getSym(false);
 		MyCompiler.Block(false);
 		MyCompiler.GEN(true);
