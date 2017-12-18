@@ -7,9 +7,7 @@ public class SYMTable {
 	static Pattern p = Pattern.compile("^(\\d)+$");
 
 	/**
-	 * 输入单词，返回系统内码
-	 *  -1 系统未使用的单词 
-	 *  -2 数字
+	 * 输入单词，返回系统内码 -1 系统未使用的单词 -2 数字
 	 * 
 	 * @param word
 	 * @return
@@ -40,25 +38,41 @@ public class SYMTable {
 			flag = 11;
 		} else if (word.equals("write")) {
 			flag = 12;
+		} else if (word.equals("do")) {
+			flag = 104;
 		} else if (word.equals(">") || word.equals("<") || word.equals("+") || word.equals("-") || word.equals("*")
 				|| word.equals("/") || word.equals("=") || word.equals(";") || word.equals(",") || word.equals(":")) {
 			char arr[] = word.toCharArray();
 			char c = arr[0];
-			flag =  c + 0;
-		}else if(word.equals(">=")){
-			flag  = 100;
-		}else if(word.equals("<=")){
-			flag  = 101;
-		}else if(word.equals(":=")){
-			flag  = 102;
-		} else if(word.equals("call")){
+			flag = c + 0;
+		} else if (word.equals(">=")) {
+			flag = 100;
+		} else if (word.equals("<=")) {
+			flag = 101;
+		} else if (word.equals("!=")) {
+			flag = 102;
+		} else if (word.equals("!=")) {
 			flag = 103;
-		}else {
+		} else if (word.equals(":=")) {
+			flag = 104;
+		} else if (word.equals("call")) {
+			flag = 105;
+		} else {
 			Matcher matcher = p.matcher(word);
 			if (matcher.find()) {
 				flag = -2;
 			}
 		}
 		return flag;
+	}
+
+	public static boolean BiJiaoFu(int SYMCode){
+		String word[] = {">","<",">=","<=","!=","=="};
+		for (String string : word) {
+			if(SYMCode==getSysCode(string)){
+				return true;
+			}
+		}
+		return false;
 	}
 }

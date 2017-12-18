@@ -1,6 +1,24 @@
-const a=10;
-var b,c;
+const a=8,b2=2;
+var b,c,tmp;
 procedure p;
 begin
   c:=b+a;
 end;
+begin
+  read b;
+
+  while b<10 do
+    begin
+      call  p;
+      write b2*c;
+      read b;
+     end;
+
+
+  if b>8  then 
+  begin
+	write b2;
+	write b;
+  end;
+
+end;	

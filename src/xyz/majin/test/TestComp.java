@@ -23,8 +23,8 @@ public class TestComp {
 			System.out.println("½áÊø");
 		}
 	}
-
-//	@Test
+//
+	@Test
 	public void testSym() {
 		MyCompiler.getSym(true);
 	}
@@ -36,11 +36,21 @@ public class TestComp {
 		System.out.println();
 	}
 	
-	@Test
+//	@Test
 	public void testGen(){  
 		MyCompiler.getSym(false);
 		MyCompiler.Block(false);
 		MyCompiler.GEN(true);
+		System.out.println();
+	}
+	
+	@Test
+	public void testRun(){  
+		MyCompiler.getSym(false);
+		MyCompiler.Block(false);
+		MyCompiler.GEN(false);
+		MyCompiler.RUN(true);
+		
 		System.out.println();
 	}
 }
